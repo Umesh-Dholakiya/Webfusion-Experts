@@ -7,7 +7,7 @@
  */
 
 const express = require('express');
-const router  = express.Router();
+const router = express.Router();
 const { CONTACTS_FILE, NEWSLETTER_FILE, WHATSAPP_LEADS_FILE } = require('../config/paths');
 const { readJSON, writeJSON } = require('../helpers/fileHelper');
 const { getIsConnected } = require('../config/db');
