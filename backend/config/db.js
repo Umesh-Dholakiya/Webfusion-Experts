@@ -10,15 +10,15 @@ const connectDB = async () => {
     return false;
   }
 
-  // Check for placeholder or incomplete URI
+  // Check for actual placeholder patterns only (not real URIs)
   if (
     uri.includes('<username>') ||
     uri.includes('<password>') ||
-    uri.includes('cluster0.mongodb.net') // generic placeholder domain without Atlas cluster hash
+    uri === 'your_mongodb_connection_string_here'
   ) {
     console.log('ℹ️ [MongoDB] Placeholder URI detected in backend/.env.');
-    console.log('💡 [MongoDB] To enable MongoDB Atlas: Replace MONGODB_URI in backend/.env with your real MongoDB Atlas connection string (e.g. mongodb+srv://user:pass@cluster0.a1b2c.mongodb.net/webfusion).');
-    console.log('⚡ [MongoDB] Server is running seamlessly with local JSON storage.');
+    console.log('💡 [MongoDB] To enable MongoDB Atlas: Replace MONGODB_URI in backend/.env with your real MongoDB Atlas connection string.');
+    console.log('⚡ [MongoDB] Server is running with local JSON storage.');
     return false;
   }
 
@@ -26,22 +26,27 @@ const connectDB = async () => {
     return true;
   }
 
+  console.log('🔄 [MongoDB] Attempting to connect to MongoDB Atlas...');
+
   try {
     const conn = await mongoose.connect(uri, {
-      serverSelectionTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 10000,
     });
     isConnected = true;
-    console.log(`✅ [MongoDB] Connected successfully to database host: ${conn.connection.host}`);
+    console.log(`✅ [MongoDB] Connected successfully to: ${conn.connection.host}`);
     return true;
   } catch (err) {
-    if (err.code === 'ECONNREFUSED' || err.message.includes('querySrv')) {
-      console.log('⚠️ [MongoDB] DNS lookup failed. Please check if your MongoDB connection string in backend/.env is correct and your internet connection is active.');
-    } else if (err.message.includes('Authentication failed')) {
-      console.log('⚠️ [MongoDB] Authentication failed. Please verify your MongoDB username and password in backend/.env.');
+    if (err.message && (err.message.includes('querySrv') || err.message.includes('ECONNREFUSED'))) {
+      console.error('❌ [MongoDB] Connection failed: DNS lookup failed.');
+      console.error('💡 [MongoDB] Your MONGODB_URI cluster address seems incorrect.');
+      console.error('   → Go to MongoDB Atlas → Connect → Drivers → Copy the correct connection string.');
+      console.error('   → Make sure your IP is whitelisted in Network Access (0.0.0.0/0 for dev).');
+    } else if (err.message && err.message.includes('Authentication failed')) {
+      console.error('❌ [MongoDB] Authentication failed. Check your username/password in backend/.env.');
     } else {
-      console.error(`⚠️ [MongoDB] Connection warning: ${err.message}`);
+      console.error(`❌ [MongoDB] Connection error: ${err.message}`);
     }
-    console.log('⚡ [MongoDB] Falling back to local JSON storage so your app continues working smoothly.');
+    console.log('⚡ [MongoDB] Falling back to local JSON storage.');
     return false;
   }
 };

@@ -14,13 +14,10 @@ Node.js + Express REST API. Deployed on **Render**.
 |---|---|---|
 | GET | `/api/health` | Server health check |
 | POST | `/api/contact` | Submit contact form |
-| POST | `/api/newsletter` | Subscribe to newsletter |
 | POST | `/api/whatsapp` | Log WhatsApp lead |
 | GET | `/api/admin/contacts` | Get all contacts |
-| GET | `/api/admin/newsletter` | Get all subscribers |
 | GET | `/api/admin/whatsapp` | Get all leads |
 | DELETE | `/api/admin/contacts/:id` | Delete a contact |
-| DELETE | `/api/admin/newsletter/:id` | Delete a subscriber |
 
 ## Local Development
 
@@ -63,7 +60,6 @@ npm start
 
 Data is saved in `data/` folder as JSON files:
 - `data/contacts.json`
-- `data/newsletter.json`  
 - `data/whatsapp_leads.json`
 
 > These files are auto-created on first run. They are gitignored.

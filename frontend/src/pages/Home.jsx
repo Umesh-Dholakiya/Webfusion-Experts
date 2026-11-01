@@ -2,15 +2,15 @@ import React from 'react'
 import { Helmet } from 'react-helmet-async'
 import HeroSection from '../components/HeroSection'
 import AboutSection from '../components/AboutSection'
-import StatsSection from '../components/StatsSection'
 import ServicesSection from '../components/ServicesSection'
+import ProcessSection from '../components/ProcessSection'
 import WhyChooseSection from '../components/WhyChooseSection'
 import PortfolioSection from '../components/PortfolioSection'
+import IndustriesWeServeSection from '../components/IndustriesWeServeSection'
 import TechStackSection from '../components/TechStackSection'
 import TestimonialsSection from '../components/TestimonialsSection'
-import TeamSection from '../components/TeamSection'
-import FAQSection from '../components/FAQSection'
 import ContactSection from '../components/ContactSection'
+import CTASection from '../components/CTASection'
 
 const Home = () => {
   return (
@@ -22,14 +22,14 @@ const Home = () => {
 
       <HeroSection />
       <AboutSection />
-      <StatsSection />
       <ServicesSection />
-      <WhyChooseSection />
+      <ProcessSection />
       <PortfolioSection />
+      <IndustriesWeServeSection />
       <TechStackSection />
+      <WhyChooseSection />
       <TestimonialsSection />
-      <TeamSection />
-      <FAQSection />
+      <CTASection />
       <ContactSection />
     </>
   )

@@ -11,7 +11,6 @@ const { connectDB } = require('./config/db');
 
 // ── Import Routes ────────────────────────────────────────────
 const contactRoutes    = require('./routes/contact');
-const newsletterRoutes = require('./routes/newsletter');
 const whatsappRoutes   = require('./routes/whatsapp');
 const adminRoutes      = require('./routes/admin');
 
@@ -23,10 +22,18 @@ const PORT = process.env.PORT || 5000;
 connectDB();
 
 // ── Middleware ───────────────────────────────────────────────
+const getAllowedOrigin = () => {
+  const raw = process.env.ALLOWED_ORIGIN || '*';
+  if (raw === '*') return '*';
+  const origins = raw.split(',').map(o => o.trim()).filter(Boolean);
+  return origins.length === 1 ? origins[0] : origins;
+};
+
 app.use(cors({
-  origin: process.env.ALLOWED_ORIGIN ? process.env.ALLOWED_ORIGIN.split(',') : '*',
+  origin: getAllowedOrigin(),
   methods: ['GET', 'POST', 'PATCH', 'DELETE'],
-  allowedHeaders: ['Content-Type']
+  allowedHeaders: ['Content-Type'],
+  credentials: false
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -42,7 +49,6 @@ app.get('/api/health', (req, res) => {
 
 // ── Mount Routes ─────────────────────────────────────────────
 app.use('/api', contactRoutes);
-app.use('/api', newsletterRoutes);
 app.use('/api', whatsappRoutes);
 app.use('/api', adminRoutes);
 

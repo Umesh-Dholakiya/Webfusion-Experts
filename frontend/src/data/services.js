@@ -1,105 +1,49 @@
 export const services = [
   {
     id: 1,
-    title: 'Website Development',
-    description: 'Modern, responsive, and SEO-friendly websites that help businesses establish a strong and lasting online presence.',
-    icon: 'FaCode',
-    features: [
-      'Responsive Design',
-      'SEO Friendly',
-      'Fast Loading',
-      'Clean Code'
-    ]
+    title: 'Web Development',
+    description: 'Modern, responsive websites built with clean design, reliable technology, and a focus on performance and user experience.',
+    icon: 'FaGlobe',
+    features: ['React', 'Next.js', 'Node.js', 'MERN', 'JavaScript']
   },
 
   {
     id: 2,
-    title: 'Custom CRM System',
-    description: 'Powerful CRM solutions tailored to streamline customer management, sales tracking, and daily business operations.',
-    icon: 'FaUsersCog',
-    features: [
-      'Lead Management',
-      'Customer Tracking',
-      'Sales Automation',
-      'Analytics Dashboard'
-    ]
+    title: 'Mobile App Development',
+    description: 'Build scalable mobile applications for iOS and Android with seamless UX, offline support, and native device integration.',
+    icon: 'FaMobileAlt',
+    features: ['Flutter', 'React Native', 'Kotlin']
   },
 
   {
     id: 3,
-    title: 'Custom Software Development',
-    description: 'Scalable and secure software solutions built to meet unique business requirements and complex workflows.',
-    icon: 'FaLaptopCode',
-    features: [
-      'Business Automation',
-      'Custom Solutions',
-      'Secure Architecture',
-      'Scalable Systems'
-    ]
+    title: 'Desktop Applications',
+    description: 'High-performance desktop software for enterprise workflows — from data-heavy dashboards to specialized business tools.',
+    icon: 'FaDesktop',
+    features: ['.NET', 'Electron']
   },
 
   {
     id: 4,
-    title: 'Mobile App Development',
-    description: 'High-performance mobile applications with intuitive user experiences for both Android and iOS platforms.',
-    icon: 'FaMobileAlt',
-    features: [
-      'Android Apps',
-      'iOS Apps',
-      'Cross Platform',
-      'User Friendly UI'
-    ]
+    title: 'Custom CRM System',
+    description: 'Powerful CRM solutions tailored to streamline customer management, sales tracking, and daily business operations.',
+    icon: 'FaUsersCog',
+    features: ['Lead Management', 'Sales Automation', 'Analytics']
   },
 
   {
     id: 5,
-    title: 'Shopify Development',
-    description: 'Custom Shopify stores and e-commerce solutions professionally designed to maximize conversions and business growth.',
-    icon: 'FaShoppingCart',
-    features: [
-      'Custom Themes',
-      'App Integration',
-      'Payment Setup',
-      'Store Optimization'
-    ]
+    title: 'Custom Software Development',
+    description: 'Custom web solutions built around your business requirements, workflows, and specific digital needs.',
+    icon: 'FaLaptopCode',
+    features: ['Business Automation', 'Secure Architecture', 'Scalable Systems']
   },
 
   {
     id: 6,
-    title: 'API Integration',
-    description: 'Seamless third-party integrations and backend connectivity to improve workflow efficiency and data synchronization.',
-    icon: 'FaPlug',
-    features: [
-      'REST APIs',
-      'Authentication',
-      'Data Sync',
-      'Third-Party Services'
-    ]
-  },
-
-  {
-    id: 7,
-    title: 'Mobile Responsive Design',
-    description: 'Fully responsive layouts optimized for mobile, tablet, and desktop devices to ensure a consistent user experience.',
-    icon: 'FaTabletAlt',
-    features: [
-      'Mobile First',
-      'Cross Browser',
-      'Adaptive Layouts',
-      'Touch Friendly'
-    ]
-  },
-
-  {
-    id: 8,
-    title: 'Performance Optimization',
-    description: 'Optimize websites and applications for faster loading speeds and deliver an exceptional overall user experience.',
-    icon: 'FaTachometerAlt',
-    features: [
-      'Code Splitting',
-      'Lazy Loading',
-      'Caching',
-      'CDN Setup'
-    ]
+    title: 'Website Redesign',
+    description: 'Transform outdated websites into modern, responsive, and user-friendly digital experiences with improved design, usability, and performance.',
+    icon: 'FaLightbulb',
+    features: ['UI Modernization', 'Responsive Design', 'Performance Optimization']
   }
 ]

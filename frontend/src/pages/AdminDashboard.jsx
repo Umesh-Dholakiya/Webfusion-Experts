@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  FaLock, FaUsers, FaEnvelope, FaClock, FaCheckCircle,
+  FaLock, FaEnvelope, FaClock, FaCheckCircle,
   FaTrash, FaDownload, FaSyncAlt, FaSignOutAlt,
   FaWhatsapp, FaPhone, FaSearch, FaFilter, FaBell, FaExclamationTriangle
 } from 'react-icons/fa'
@@ -197,7 +197,6 @@ const AdminDashboard = () => {
   }, [])
 
   const [contacts, setContacts] = useState([])
-  const [newsletters, setNewsletters] = useState([])
   const [whatsappLeads, setWhatsappLeads] = useState([])
   const [loading, setLoading] = useState(false)
   const [syncStatus, setSyncStatus] = useState('')
@@ -238,21 +237,42 @@ const AdminDashboard = () => {
   const fetchData = async () => {
     setLoading(true)
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+      const apiUrl = import.meta.env.VITE_API_URL || '/api'
       const response = await fetch(`${apiUrl}/submissions`)
       if (response.ok) {
         const data = await response.json()
-        setContacts(data.contacts || [])
-        setNewsletters(data.newsletters || [])
-        setWhatsappLeads(data.whatsappLeads || [])
-        if (data.contacts) localStorage.setItem('wf_contacts', JSON.stringify(data.contacts))
-        if (data.newsletters) localStorage.setItem('wf_newsletter', JSON.stringify(data.newsletters))
-        if (data.whatsappLeads) localStorage.setItem('wf_whatsapp_leads', JSON.stringify(data.whatsappLeads))
+
+        // Clean deduplicate contacts by ID / _id
+        const uniqueContacts = []
+        const seenContacts = new Set()
+        for (const c of (data.contacts || [])) {
+          const key = c._id || c.id
+          if (key && !seenContacts.has(key)) {
+            seenContacts.add(key)
+            uniqueContacts.push(c)
+          }
+        }
+
+        // Clean deduplicate WhatsApp leads by ID / _id
+        const uniqueWALeads = []
+        const seenWA = new Set()
+        for (const w of (data.whatsappLeads || [])) {
+          const key = w._id || w.id
+          if (key && !seenWA.has(key)) {
+            seenWA.add(key)
+            uniqueWALeads.push(w)
+          }
+        }
+
+        setContacts(uniqueContacts)
+        setWhatsappLeads(uniqueWALeads)
+        localStorage.setItem('wf_contacts', JSON.stringify(uniqueContacts))
+        localStorage.setItem('wf_whatsapp_leads', JSON.stringify(uniqueWALeads))
 
         // New lead alert: check if any WhatsApp lead is newer than last visit
         const lastVisit = localStorage.getItem('wf_admin_last_visit')
-        if (lastVisit && data.whatsappLeads) {
-          const hasNew = data.whatsappLeads.some(l => new Date(l.createdAt) > new Date(lastVisit))
+        if (lastVisit && uniqueWALeads.length > 0) {
+          const hasNew = uniqueWALeads.some(l => new Date(l.createdAt) > new Date(lastVisit))
           if (hasNew) setNewLeadAlert(true)
         }
         localStorage.setItem('wf_admin_last_visit', new Date().toISOString())
@@ -262,7 +282,6 @@ const AdminDashboard = () => {
     } catch (err) {
       console.warn('API unavailable. Falling back to localStorage.', err)
       setContacts(JSON.parse(localStorage.getItem('wf_contacts') || '[]'))
-      setNewsletters(JSON.parse(localStorage.getItem('wf_newsletter') || '[]'))
       setWhatsappLeads(JSON.parse(localStorage.getItem('wf_whatsapp_leads') || '[]'))
     } finally {
       setLoading(false)
@@ -271,11 +290,11 @@ const AdminDashboard = () => {
 
   // ── Status Changes ─────────────────────────────────────────────────────────
   const handleContactStatusChange = async (id, newStatus) => {
-    const updated = contacts.map(c => c.id === id ? { ...c, status: newStatus } : c)
+    const updated = contacts.map(c => (c.id === id || c._id === id) ? { ...c, status: newStatus } : c)
     setContacts(updated)
     localStorage.setItem('wf_contacts', JSON.stringify(updated))
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+      const apiUrl = import.meta.env.VITE_API_URL || '/api'
       await fetch(`${apiUrl}/submissions/contact/${id}`, {
         method: 'PATCH', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus })
@@ -284,11 +303,11 @@ const AdminDashboard = () => {
   }
 
   const handleWAStatusChange = async (id, newStatus) => {
-    const updated = whatsappLeads.map(l => l.id === id ? { ...l, status: newStatus } : l)
+    const updated = whatsappLeads.map(l => (l.id === id || l._id === id) ? { ...l, status: newStatus } : l)
     setWhatsappLeads(updated)
     localStorage.setItem('wf_whatsapp_leads', JSON.stringify(updated))
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+      const apiUrl = import.meta.env.VITE_API_URL || '/api'
       await fetch(`${apiUrl}/submissions/whatsapp/${id}`, {
         method: 'PATCH', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus })
@@ -300,63 +319,82 @@ const AdminDashboard = () => {
   const handleDeleteContact = async (id) => {
     const confirmed = await showConfirm('Are you sure you want to delete this inquiry? This action cannot be undone.')
     if (!confirmed) return
-    const updated = contacts.filter(c => c.id !== id)
+    const updated = contacts.filter(c => c.id !== id && c._id !== id)
     setContacts(updated)
     localStorage.setItem('wf_contacts', JSON.stringify(updated))
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
-      await fetch(`${apiUrl}/submissions/contact/${id}`, { method: 'DELETE' })
-    } catch (err) { console.warn('Server offline.', err) }
-  }
-
-  const handleDeleteNewsletter = async (id) => {
-    const confirmed = await showConfirm('Are you sure you want to remove this subscriber? This action cannot be undone.')
-    if (!confirmed) return
-    const updated = newsletters.filter(s => s.id !== id)
-    setNewsletters(updated)
-    localStorage.setItem('wf_newsletter', JSON.stringify(updated))
-    try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
-      await fetch(`${apiUrl}/submissions/newsletter/${id}`, { method: 'DELETE' })
+      const apiUrl = import.meta.env.VITE_API_URL || '/api'
+      const res = await fetch(`${apiUrl}/submissions/contact/${id}`, { method: 'DELETE' })
+      if (!res.ok) {
+        console.error('Delete inquiry failed on server with status:', res.status)
+      }
     } catch (err) { console.warn('Server offline.', err) }
   }
 
   const handleDeleteWA = async (id) => {
     const confirmed = await showConfirm('Are you sure you want to delete this WhatsApp lead? This action cannot be undone.')
     if (!confirmed) return
-    const updated = whatsappLeads.filter(l => l.id !== id)
+    const updated = whatsappLeads.filter(l => l.id !== id && l._id !== id)
     setWhatsappLeads(updated)
     localStorage.setItem('wf_whatsapp_leads', JSON.stringify(updated))
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+      const apiUrl = import.meta.env.VITE_API_URL || '/api'
       await fetch(`${apiUrl}/submissions/whatsapp/${id}`, { method: 'DELETE' })
     } catch (err) { console.warn('Server offline.', err) }
   }
 
   // ── Sync ───────────────────────────────────────────────────────────────────
   const syncToServer = async () => {
-    setSyncStatus('Syncing...')
-    const localContacts = JSON.parse(localStorage.getItem('wf_contacts') || '[]')
-    const localNewsletter = JSON.parse(localStorage.getItem('wf_newsletter') || '[]')
-    const localWA = JSON.parse(localStorage.getItem('wf_whatsapp_leads') || '[]')
-    let syncCount = 0
+    setSyncStatus('Syncing with server...')
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+      const apiUrl = import.meta.env.VITE_API_URL || '/api'
+      // 1. Fetch current server submissions
+      const serverRes = await fetch(`${apiUrl}/submissions`)
+      if (!serverRes.ok) throw new Error('Cannot reach server')
+      const serverData = await serverRes.json()
+
+      const serverContactIds = new Set((serverData.contacts || []).map(c => c.id || c._id))
+      const serverWAIds = new Set((serverData.whatsappLeads || []).map(w => w.id || w._id))
+
+      const localContacts = JSON.parse(localStorage.getItem('wf_contacts') || '[]')
+      const localWA = JSON.parse(localStorage.getItem('wf_whatsapp_leads') || '[]')
+
+      let syncedCount = 0
+
+      // 2. Only push genuinely new local items that do not exist on the server
       for (const item of localContacts) {
-        await fetch(`${apiUrl}/contact`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(item) })
-        syncCount++
+        const id = item.id || item._id
+        if (id && !serverContactIds.has(id)) {
+          await fetch(`${apiUrl}/contact`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(item)
+          })
+          syncedCount++
+        }
       }
-      for (const item of localNewsletter) {
-        await fetch(`${apiUrl}/newsletter`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(item) })
-        syncCount++
-      }
+
       for (const item of localWA) {
-        await fetch(`${apiUrl}/whatsapp-lead`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(item) })
-        syncCount++
+        const id = item.id || item._id
+        if (id && !serverWAIds.has(id)) {
+          await fetch(`${apiUrl}/whatsapp-lead`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(item)
+          })
+          syncedCount++
+        }
       }
-      setSyncStatus(`✅ Sync complete! ${syncCount} items synced.`)
-      fetchData()
+
+      // 3. Refresh data from server to guarantee sync
+      await fetchData()
+      if (syncedCount > 0) {
+        setSyncStatus(`✅ Synced ${syncedCount} item(s) to server.`)
+      } else {
+        setSyncStatus('✅ Everything is up to date!')
+      }
     } catch (err) {
+      console.error('Sync failed:', err)
       setSyncStatus('❌ Sync failed: backend unreachable.')
     } finally {
       setTimeout(() => setSyncStatus(''), 4000)
@@ -396,10 +434,6 @@ const AdminDashboard = () => {
     return matchSearch && matchService && matchStatus
   })
 
-  const filteredNewsletters = newsletters.filter(item =>
-    item.email?.toLowerCase().includes(searchQuery.toLowerCase())
-  )
-
   const filteredWA = whatsappLeads.filter(item => {
     const q = searchQuery.toLowerCase()
     return (
@@ -414,7 +448,6 @@ const AdminDashboard = () => {
     total: contacts.length,
     pending: contacts.filter(c => c.status === 'Pending').length,
     contacted: contacts.filter(c => ['Contacted', 'Completed'].includes(c.status)).length,
-    subscribers: newsletters.length,
     waLeads: whatsappLeads.length,
     waNew: whatsappLeads.filter(l => l.status === 'New').length
   }
@@ -537,11 +570,6 @@ const AdminDashboard = () => {
       id: 'whatsapp', label: 'WhatsApp Leads',
       icon: <FaWhatsapp />, count: filteredWA.length,
       color: '#25D366', badge: stats.waNew > 0 ? stats.waNew : null
-    },
-    {
-      id: 'newsletters', label: 'Newsletter',
-      icon: <FaUsers />, count: filteredNewsletters.length,
-      color: '#00bcd4'
     }
   ]
 
@@ -704,7 +732,6 @@ const AdminDashboard = () => {
             { label: 'Pending Response',   value: stats.pending,     icon: FaClock,      color: '#ff9800' },
             { label: 'Leads Contacted',    value: stats.contacted,   icon: FaCheckCircle,color: '#28a745' },
             { label: 'WhatsApp Leads',     value: stats.waLeads,     icon: FaWhatsapp,   color: '#25D366', badge: stats.waNew },
-            { label: 'Newsletter Subs',    value: stats.subscribers, icon: FaUsers,      color: '#00bcd4' },
           ].map((s, idx) => (
             <motion.div
               key={idx}
@@ -890,8 +917,7 @@ const AdminDashboard = () => {
           <button
             onClick={() => {
               if (activeTab === 'contacts') exportToCSV(contacts, 'contacts.csv')
-              else if (activeTab === 'whatsapp') exportToCSV(whatsappLeads, 'whatsapp_leads.csv')
-              else exportToCSV(newsletters, 'subscribers.csv')
+              else exportToCSV(whatsappLeads, 'whatsapp_leads.csv')
             }}
             style={{
               background: 'linear-gradient(135deg, #f57c00, #ff9800)',
@@ -934,7 +960,7 @@ const AdminDashboard = () => {
               <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {filteredContacts.map((item, i) => (
                   <motion.div
-                    key={item.id}
+                    key={item._id || item.id || i}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.03 }}
@@ -999,7 +1025,7 @@ const AdminDashboard = () => {
                         <span style={{ fontSize: '0.78rem', color: '#666' }}>Status:</span>
                         <select
                           value={item.status || 'Pending'}
-                          onChange={e => handleContactStatusChange(item.id, e.target.value)}
+                          onChange={e => handleContactStatusChange(item._id || item.id, e.target.value)}
                           style={{
                             background: 'rgba(255,255,255,0.05)',
                             border: '1px solid rgba(255,255,255,0.1)',
@@ -1014,7 +1040,7 @@ const AdminDashboard = () => {
                         </select>
                       </div>
                       <button
-                        onClick={() => handleDeleteContact(item.id)}
+                        onClick={() => handleDeleteContact(item._id || item.id)}
                         style={{
                           background: 'rgba(220,53,69,0.1)', border: '1px solid rgba(220,53,69,0.2)',
                           color: '#dc3545', width: '36px', height: '36px', borderRadius: '8px',
@@ -1046,7 +1072,7 @@ const AdminDashboard = () => {
                   <tbody>
                     {filteredContacts.map((item, i) => (
                       <motion.tr
-                        key={item.id}
+                        key={item._id || item.id || i}
                         initial={{ opacity: 0, y: 6 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.03 }}
@@ -1084,7 +1110,7 @@ const AdminDashboard = () => {
                         <td style={{ padding: '14px 16px' }}>
                           <select
                             value={item.status || 'Pending'}
-                            onChange={e => handleContactStatusChange(item.id, e.target.value)}
+                            onChange={e => handleContactStatusChange(item._id || item.id, e.target.value)}
                             style={{
                               background: 'rgba(255,255,255,0.05)',
                               border: '1px solid rgba(255,255,255,0.1)',
@@ -1100,7 +1126,7 @@ const AdminDashboard = () => {
                         </td>
                         <td style={{ padding: '14px 16px', textAlign: 'center' }}>
                           <button
-                            onClick={() => handleDeleteContact(item.id)}
+                            onClick={() => handleDeleteContact(item._id || item.id)}
                             style={{
                               background: 'rgba(220,53,69,0.1)', border: '1px solid rgba(220,53,69,0.2)',
                               color: '#dc3545', width: '32px', height: '32px', borderRadius: '8px',
@@ -1164,7 +1190,7 @@ const AdminDashboard = () => {
               <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {filteredWA.map((item, i) => (
                   <motion.div
-                    key={item.id}
+                    key={item._id || item.id || i}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.04 }}
@@ -1264,7 +1290,7 @@ const AdminDashboard = () => {
                           </a>
                         )}
                         <button
-                          onClick={() => handleDeleteWA(item.id)}
+                          onClick={() => handleDeleteWA(item._id || item.id)}
                           style={{
                             background: 'rgba(220,53,69,0.1)', border: '1px solid rgba(220,53,69,0.2)',
                             color: '#dc3545', width: '36px', height: '36px', borderRadius: '8px',
@@ -1297,7 +1323,7 @@ const AdminDashboard = () => {
                   <tbody>
                     {filteredWA.map((item, i) => (
                       <motion.tr
-                        key={item.id}
+                        key={item._id || item.id || i}
                         initial={{ opacity: 0, y: 6 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.04 }}
@@ -1353,7 +1379,7 @@ const AdminDashboard = () => {
                         <td style={{ padding: '14px 16px' }}>
                           <select
                             value={item.status || 'New'}
-                            onChange={e => handleWAStatusChange(item.id, e.target.value)}
+                            onChange={e => handleWAStatusChange(item._id || item.id, e.target.value)}
                             style={{
                               background: 'rgba(255,255,255,0.05)',
                               border: '1px solid rgba(255,255,255,0.1)',
@@ -1387,7 +1413,7 @@ const AdminDashboard = () => {
                               </a>
                             )}
                             <button
-                              onClick={() => handleDeleteWA(item.id)}
+                              onClick={() => handleDeleteWA(item._id || item.id)}
                               style={{
                                 background: 'rgba(220,53,69,0.1)', border: '1px solid rgba(220,53,69,0.2)',
                                 color: '#dc3545', width: '32px', height: '32px', borderRadius: '8px',
@@ -1409,73 +1435,6 @@ const AdminDashboard = () => {
           </div>
         )}
 
-        {/* ════════ NEWSLETTERS TAB ════════ */}
-        {!loading && activeTab === 'newsletters' && (
-          <div style={{
-            background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)',
-            borderRadius: '16px', overflow: 'hidden'
-          }}>
-            {filteredNewsletters.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '60px 0', color: '#555' }}>
-                <FaUsers style={{ fontSize: '2rem', display: 'block', margin: '0 auto 12px', opacity: 0.3 }} />
-                No subscribers yet.
-              </div>
-            ) : (
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', minWidth: '500px', borderCollapse: 'collapse' }}>
-                  <thead>
-                    <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}>
-                      {['#', 'Email Address', 'Date Subscribed', 'Action'].map((h, i) => (
-                        <th key={h} style={{
-                          padding: '14px 16px', color: '#555', fontSize: '0.75rem',
-                          fontWeight: 600, textAlign: i === 0 || i === 3 ? 'center' : 'left',
-                          letterSpacing: '0.5px', textTransform: 'uppercase'
-                        }}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredNewsletters.map((item, i) => (
-                      <motion.tr
-                        key={item.id}
-                        initial={{ opacity: 0, y: 6 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.03 }}
-                        style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
-                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.025)'}
-                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                      >
-                        <td style={{ padding: '14px 16px', textAlign: 'center', color: '#555', fontSize: '0.8rem' }}>{i + 1}</td>
-                        <td style={{ padding: '14px 16px' }}>
-                          <a href={`mailto:${item.email}`} style={{ color: '#fff', fontWeight: 600, fontSize: '0.9rem', textDecoration: 'none' }}>
-                            {item.email}
-                          </a>
-                        </td>
-                        <td style={{ padding: '14px 16px', color: '#555', fontSize: '0.82rem' }}>
-                          {formatDate(item)}
-                        </td>
-                        <td style={{ padding: '14px 16px', textAlign: 'center' }}>
-                          <button
-                            onClick={() => handleDeleteNewsletter(item.id)}
-                            style={{
-                              background: 'rgba(220,53,69,0.1)', border: '1px solid rgba(220,53,69,0.2)',
-                              color: '#dc3545', width: '32px', height: '32px', borderRadius: '8px',
-                              cursor: 'pointer', display: 'inline-flex', alignItems: 'center',
-                              justifyContent: 'center', fontSize: '13px'
-                            }}
-                            title="Remove subscriber"
-                          >
-                            <FaTrash />
-                          </button>
-                        </td>
-                      </motion.tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        )}
 
       </div>
 

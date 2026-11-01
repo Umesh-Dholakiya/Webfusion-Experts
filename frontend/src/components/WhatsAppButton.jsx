@@ -25,7 +25,7 @@ const WhatsAppButton = () => {
 
     // Save to backend API
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+      const apiUrl = import.meta.env.VITE_API_URL || '/api'
       await fetch(`${apiUrl}/whatsapp-lead`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -37,52 +37,72 @@ const WhatsAppButton = () => {
   }
 
   const openWhatsApp = (msg) => {
-    const encodedMsg = encodeURIComponent(msg || "Hello! I'm interested in your services.")
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMsg}`, '_blank', 'noopener,noreferrer')
+    const defaultMsg = `Hello WebFusion Experts 👋\n\nI would like to inquire about your web development and digital solutions. Please let me know how we can connect!`
+    const encodedMsg = encodeURIComponent(msg || defaultMsg)
+    const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMsg}`
+
+    const win = window.open(waUrl, '_blank', 'noopener,noreferrer')
+    if (!win || win.closed || typeof win.closed === 'undefined') {
+      window.location.href = waUrl
+    }
   }
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault()
+    if (!formData.name.trim() || !formData.phone.trim() || !formData.message.trim()) return
+
     setSubmitting(true)
 
     const leadData = {
       id: Date.now().toString(),
-      name: formData.name,
-      phone: formData.phone,
-      message: formData.message,
+      name: formData.name.trim(),
+      phone: formData.phone.trim(),
+      message: formData.message.trim(),
       sourcePage: window.location.pathname || '/',
       status: 'New',
       createdAt: new Date().toISOString()
     }
 
-    await saveLead(leadData)
+    // Save lead in background
+    saveLead(leadData)
 
-    // Build WhatsApp prefilled message
-    const waMsg = formData.message
-      ? `Hi, I'm ${formData.name}! ${formData.message}`
-      : `Hi, I'm ${formData.name}! I'd like to discuss your services.`
+    // Build structured WhatsApp message including Name, Phone, and Details
+    const waMsg = `Hello WebFusion Experts 👋
+
+I would like to discuss a project with you:
+
+👤 *Name:* ${formData.name.trim()}
+📞 *Phone:* ${formData.phone.trim()}
+💬 *Requirement:* ${formData.message.trim()}
+🌐 *Source:* ${window.location.pathname || '/'}
+
+Please let me know how we can proceed. Thank you!`
+
+    // Open WhatsApp immediately with all structured details
+    openWhatsApp(waMsg)
 
     setSubmitting(false)
     setShowPopup(false)
     setFormData({ name: '', phone: '', message: '' })
-    openWhatsApp(waMsg)
   }
 
-  const handleSkip = async () => {
+  const handleSkip = () => {
     // Save anonymous lead
     const leadData = {
       id: Date.now().toString(),
-      name: 'Anonymous',
+      name: 'Direct Visitor',
       phone: 'Not Provided',
-      message: '',
+      message: 'Direct WhatsApp chat',
       sourcePage: window.location.pathname || '/',
       status: 'New',
       createdAt: new Date().toISOString()
     }
-    await saveLead(leadData)
+    saveLead(leadData)
     setShowPopup(false)
     setFormData({ name: '', phone: '', message: '' })
-    openWhatsApp('')
+    openWhatsApp(
+      `Hello WebFusion Experts 👋\n\nI would like to inquire about your web development and digital solutions. Please let me know how we can connect!`
+    )
   }
 
   return (
@@ -211,7 +231,7 @@ const WhatsAppButton = () => {
               {/* Popup Form Body */}
               <div style={{ padding: '18px 18px 20px' }}>
                 <p style={{ color: '#888', fontSize: '0.82rem', marginBottom: '14px', lineHeight: 1.5 }}>
-                  Apna naam aur number share karein — hum aapko WhatsApp pe connect karenge! 🙌
+                  Share your details below to connect with us directly on WhatsApp! 🙌
                 </p>
 
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -224,7 +244,7 @@ const WhatsAppButton = () => {
                     <input
                       type="text"
                       name="name"
-                      placeholder="Aapka Naam *"
+                      placeholder="Your Full Name *"
                       value={formData.name}
                       onChange={handleChange}
                       required
@@ -273,9 +293,10 @@ const WhatsAppButton = () => {
                     }}><FaCommentAlt /></span>
                     <textarea
                       name="message"
-                      placeholder="Aapko kya chahiye? (Optional)"
+                      placeholder="How can we help you? *"
                       value={formData.message}
                       onChange={handleChange}
+                      required
                       rows={3}
                       style={{
                         width: '100%',
@@ -305,7 +326,7 @@ const WhatsAppButton = () => {
                     }}
                   >
                     <FaPaperPlane />
-                    {submitting ? 'Saving...' : 'WhatsApp Pe Bhejo'}
+                    {submitting ? 'Connecting...' : 'Send on WhatsApp'}
                   </motion.button>
 
                   {/* Skip link */}
@@ -318,7 +339,7 @@ const WhatsAppButton = () => {
                       padding: '2px', fontFamily: 'inherit'
                     }}
                   >
-                    Skip — seedha WhatsApp kholo
+                    Skip — Open WhatsApp directly
                   </button>
                 </form>
               </div>

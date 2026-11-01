@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaPaperPlane, FaLinkedin, FaInstagram } from 'react-icons/fa'
+import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaPaperPlane, FaLinkedin, FaInstagram, FaTwitter } from 'react-icons/fa'
 
 const ContactSection = () => {
   const [formData, setFormData] = useState({
@@ -42,18 +42,9 @@ const ContactSection = () => {
       createdAt: new Date().toISOString()
     }
 
-    // Save to Local Backup (always, for safety)
-    try {
-      const localContacts = JSON.parse(localStorage.getItem('wf_contacts') || '[]')
-      localContacts.push(submissionData)
-      localStorage.setItem('wf_contacts', JSON.stringify(localContacts))
-    } catch (err) {
-      console.error('Error saving to localStorage:', err)
-    }
-
     // Send to Backend API
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+      const apiUrl = import.meta.env.VITE_API_URL || '/api'
       const response = await fetch(`${apiUrl}/contact`, {
         method: 'POST',
         headers: {
@@ -63,21 +54,21 @@ const ContactSection = () => {
       })
 
       if (response.ok) {
-        setStatusMsg({ 
-          type: 'success', 
-          text: 'Thank you for your message! Your request has been saved successfully.' 
+        setStatusMsg({
+          type: 'success',
+          text: '✅ Thank you! Your message has been submitted successfully. We will get back to you within 24 hours.'
         })
         setFormData({ name: '', email: '', phone: '', service: '', subject: '', message: '' })
       } else {
-        throw new Error('Server returned error status')
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || 'Server returned error status')
       }
     } catch (error) {
-      console.warn('Backend server unreachable. Submission saved in local web cache.', error)
-      setStatusMsg({ 
-        type: 'success', 
-        text: 'Thank you! Your message was saved locally in backup. We will process it shortly.' 
+      console.error('Form submission error:', error)
+      setStatusMsg({
+        type: 'error',
+        text: '❌ Unable to submit your message. Please try again or contact us directly at webfusionexperts24@gmail.com'
       })
-      setFormData({ name: '', email: '', phone: '', service: '', subject: '', message: '' })
     } finally {
       setSubmitting(false)
     }
@@ -90,8 +81,9 @@ const ContactSection = () => {
   ]
 
   const socialLinks = [
-    { icon: FaLinkedin, label: 'LinkedIn', url: '#' },
-    { icon: FaInstagram, label: 'Instagram', url: '#' }
+    { icon: FaLinkedin, label: 'LinkedIn', url: 'https://www.linkedin.com/in/webfusion-experts-4831b13b0/' },
+    { icon: FaInstagram, label: 'Instagram', url: 'https://www.instagram.com/webfusion_experts' },
+    { icon: FaTwitter, label: 'Twitter', url: 'https://x.com/WFXExperts' }
   ]
 
   return (
@@ -251,7 +243,7 @@ const ContactSection = () => {
                       required
                     />
                   </div>
-                  
+
                   {/* Phone and Service Row */}
                   <div className="col-md-6">
                     <input
@@ -362,10 +354,10 @@ const ContactSection = () => {
                       required
                     />
                   </div>
-                  
+
                   {statusMsg.text && (
                     <div className="col-12">
-                      <div className={`p-3 rounded`} style={{ 
+                      <div className={`p-3 rounded`} style={{
                         background: statusMsg.type === 'success' ? 'rgba(40, 167, 69, 0.15)' : 'rgba(220, 53, 69, 0.15)',
                         border: statusMsg.type === 'success' ? '1px solid rgba(40, 167, 69, 0.3)' : '1px solid rgba(220, 53, 69, 0.3)',
                         color: statusMsg.type === 'success' ? '#28a745' : '#dc3545',

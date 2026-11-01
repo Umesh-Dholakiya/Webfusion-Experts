@@ -1,27 +1,33 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import {
-  FaCode,
-  FaShoppingCart,
-  FaPlug,
+  FaGlobe,
   FaMobileAlt,
-  FaTachometerAlt,
+  FaDesktop,
+  FaRobot,
+  FaCogs,
+  FaGamepad,
+  FaDatabase,
+  FaCloud,
+  FaLightbulb,
   FaUsersCog,
-  FaLaptopCode,
-  FaTabletAlt
+  FaLaptopCode
 } from 'react-icons/fa'
 import SectionHeader from './SectionHeader'
 import { services } from '../data/services'
 
 const iconMap = {
-  FaCode,
-  FaShoppingCart,
-  FaUsersCog,
-  FaLaptopCode,
+  FaGlobe,
   FaMobileAlt,
-  FaPlug,
-  FaTabletAlt,
-  FaTachometerAlt
+  FaDesktop,
+  FaRobot,
+  FaCogs,
+  FaGamepad,
+  FaDatabase,
+  FaCloud,
+  FaLightbulb,
+  FaUsersCog,
+  FaLaptopCode
 }
 
 const ServicesSection = ({ hideHeader = false }) => {
@@ -34,7 +40,7 @@ const ServicesSection = ({ hideHeader = false }) => {
           <SectionHeader
             label="What We Do"
             title="Our <span>Services</span>"
-            subtitle="We provide modern digital solutions designed to help startups and businesses build, grow, and succeed online."
+            subtitle="We build modern digital solutions that help businesses establish a strong and effective online presence."
           />
         )}
 
@@ -44,7 +50,7 @@ const ServicesSection = ({ hideHeader = false }) => {
             return (
               <motion.div
                 key={service.id}
-                className="col-lg-3 col-md-6"
+                className="col-lg-4 col-md-6"
                 initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}

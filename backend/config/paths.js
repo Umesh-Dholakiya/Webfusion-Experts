@@ -14,7 +14,6 @@ const DATA_DIR = path.join(__dirname, '..', 'data');
 
 // ── Individual Data File Paths ──────────────────────────────
 const CONTACTS_FILE       = path.join(DATA_DIR, 'contacts.json');
-const NEWSLETTER_FILE     = path.join(DATA_DIR, 'newsletter.json');
 const WHATSAPP_LEADS_FILE = path.join(DATA_DIR, 'whatsapp_leads.json');
 
 // ── Auto-create data directory and files if missing ─────────
@@ -24,7 +23,7 @@ const ensureDataFiles = () => {
     console.log('[paths] Created data/ directory');
   }
 
-  const files = [CONTACTS_FILE, NEWSLETTER_FILE, WHATSAPP_LEADS_FILE];
+  const files = [CONTACTS_FILE, WHATSAPP_LEADS_FILE];
   files.forEach(file => {
     if (!fs.existsSync(file)) {
       fs.writeFileSync(file, JSON.stringify([], null, 2), 'utf8');
@@ -39,6 +38,5 @@ ensureDataFiles();
 module.exports = {
   DATA_DIR,
   CONTACTS_FILE,
-  NEWSLETTER_FILE,
   WHATSAPP_LEADS_FILE
 };

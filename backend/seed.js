@@ -1,9 +1,8 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
-const { CONTACTS_FILE, NEWSLETTER_FILE, WHATSAPP_LEADS_FILE } = require('./config/paths');
+const { CONTACTS_FILE, WHATSAPP_LEADS_FILE } = require('./config/paths');
 const { readJSON } = require('./helpers/fileHelper');
 const Contact = require('./models/Contact');
-const Newsletter = require('./models/Newsletter');
 const WhatsAppLead = require('./models/WhatsAppLead');
 
 const seedData = async () => {
@@ -28,19 +27,6 @@ const seedData = async () => {
         );
       }
       console.log(`✅ [Seed] Synced ${contacts.length} Contacts to MongoDB.`);
-    }
-
-    // 2. Seed Newsletter Subscribers
-    const newsletters = readJSON(NEWSLETTER_FILE);
-    if (newsletters.length > 0) {
-      for (const item of newsletters) {
-        await Newsletter.updateOne(
-          { email: item.email.toLowerCase() },
-          { $setOnInsert: item },
-          { upsert: true }
-        );
-      }
-      console.log(`✅ [Seed] Synced ${newsletters.length} Newsletter Subscribers to MongoDB.`);
     }
 
     // 3. Seed WhatsApp Leads

@@ -18,7 +18,6 @@ const Navbar = () => {
     { path: '/services', label: 'Services' },
     { path: '/portfolio', label: 'Portfolio' },
     // Removed Tech and Reviews
-    // { path: '/team', label: 'Team' },
     { path: '/contact', label: 'Contact' }
   ]
 
@@ -38,14 +37,15 @@ const Navbar = () => {
           left: 0,
           right: 0,
           zIndex: 1000,
-          padding: isScrolled ? '12px 0' : '20px 0',
+          padding: isScrolled ? '12px 0' : '18px 0',
           background: isScrolled 
-            ? 'rgba(11, 11, 11, 0.85)' 
-            : 'transparent',
-          backdropFilter: isScrolled ? 'blur(20px)' : 'none',
-          WebkitBackdropFilter: isScrolled ? 'blur(20px)' : 'none',
-          borderBottom: isScrolled ? '1px solid rgba(255,255,255,0.05)' : 'none',
-          transition: 'all 0.4s ease'
+            ? 'rgba(10, 10, 10, 0.92)' 
+            : 'rgba(9, 9, 9, 0.75)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.07)',
+          boxShadow: isScrolled ? '0 10px 30px rgba(0, 0, 0, 0.5)' : 'none',
+          transition: 'all 0.3s ease'
         }}
       >
         <div className="container">

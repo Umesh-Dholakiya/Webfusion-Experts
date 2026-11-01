@@ -1,13 +1,33 @@
+import React from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from '../hooks/useInView';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Pagination, Autoplay } from 'swiper/modules';
-import { FaStar, FaQuoteLeft } from 'react-icons/fa';
-import { testimonialsData } from '../data/testimonials';
+import { FaCommentDots, FaBullseye, FaChartLine } from 'react-icons/fa';
 import SectionHeader from './SectionHeader';
+import clientExperienceBg from '../assets/client-experience-bg.jpg';
 
-import 'swiper/css';
-import 'swiper/css/pagination';
+const features = [
+  {
+    id: 1,
+    title: 'Clear Communication',
+    description: 'We keep project requirements, progress, and feedback clear throughout the development process.',
+    icon: FaCommentDots,
+    number: '01'
+  },
+  {
+    id: 2,
+    title: 'Requirement-Focused',
+    description: 'We build solutions around your business needs rather than using a one-size-fits-all approach.',
+    icon: FaBullseye,
+    number: '02'
+  },
+  {
+    id: 3,
+    title: 'Long-Term Thinking',
+    description: 'We aim to create digital solutions that are easy to maintain, improve, and grow with your business.',
+    icon: FaChartLine,
+    number: '03'
+  }
+];
 
 const TestimonialsSection = ({ hideHeader = false }) => {
   const [sectionRef, isInView] = useInView({ threshold: 0.1 });
@@ -15,130 +35,241 @@ const TestimonialsSection = ({ hideHeader = false }) => {
   return (
     <section
       ref={sectionRef}
-      className="section-padding position-relative"
-      style={{ background: '#121212' }}
-      id="testimonials"
+      className="position-relative overflow-hidden"
+      style={{
+        padding: '65px 0',
+        backgroundImage: `url(${clientExperienceBg})`,
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundSize: 'cover'
+      }}
+      id="client-experience"
     >
-      {/* Background Glow */}
+      <style>{`
+        .client-card {
+          background: rgba(14, 14, 14, 0.78);
+          backdrop-filter: blur(14px);
+          -webkit-backdrop-filter: blur(14px);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-top: 2px solid rgba(245, 124, 0, 0.45);
+          border-radius: 18px;
+          padding: 1.6rem 1.4rem;
+          height: 100%;
+          position: relative;
+          overflow: hidden;
+          box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          cursor: default;
+        }
+        .client-card:hover {
+          transform: translateY(-4px);
+          background: rgba(20, 20, 20, 0.9);
+          border-color: rgba(245, 124, 0, 0.5);
+          box-shadow: 0 16px 36px rgba(245, 124, 0, 0.14);
+        }
+        .client-icon-wrapper {
+          width: 44px;
+          height: 44px;
+          border-radius: 12px;
+          background: linear-gradient(135deg, rgba(245, 124, 0, 0.2), rgba(245, 124, 0, 0.05));
+          border: 1px solid rgba(245, 124, 0, 0.35);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 1.1rem;
+          box-shadow: 0 0 15px rgba(245, 124, 0, 0.12);
+        }
+        .client-icon {
+          color: #f57c00;
+          font-size: 19px;
+        }
+        .client-bg-number {
+          position: absolute;
+          top: 14px;
+          right: 16px;
+          font-family: 'Space Grotesk', sans-serif;
+          font-weight: 800;
+          font-size: 2.2rem;
+          color: rgba(245, 124, 0, 0.08);
+          line-height: 1;
+          pointer-events: none;
+        }
+        .commitment-banner {
+          background: rgba(16, 16, 16, 0.85);
+          backdrop-filter: blur(14px);
+          -webkit-backdrop-filter: blur(14px);
+          border: 1px solid rgba(245, 124, 0, 0.28);
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+          max-width: 820px;
+          margin: 0 auto;
+          border-radius: 50px;
+          padding: 8px 24px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 14px;
+          transition: all 0.3s ease;
+        }
+        .commitment-tag {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          color: #f57c00;
+          font-size: 0.74rem;
+          font-weight: 700;
+          letter-spacing: 1px;
+          text-transform: uppercase;
+          white-space: nowrap;
+          background: rgba(245, 124, 0, 0.1);
+          border: 1px solid rgba(245, 124, 0, 0.28);
+          padding: 3px 10px;
+          border-radius: 20px;
+          flex-shrink: 0;
+        }
+        .commitment-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: #f57c00;
+          box-shadow: 0 0 6px #f57c00;
+        }
+        .commitment-text {
+          color: #d0d0d0;
+          font-size: 0.88rem;
+          line-height: 1.5;
+          margin: 0;
+        }
+        @media (max-width: 768px) {
+          .client-card {
+            padding: 1.4rem 1.2rem;
+          }
+          .commitment-banner {
+            display: flex;
+            flex-direction: column;
+            border-radius: 16px;
+            padding: 16px 14px;
+            gap: 10px;
+            width: 100%;
+            max-width: 100%;
+            text-align: center;
+          }
+          .commitment-text {
+            font-size: 0.85rem;
+            line-height: 1.55;
+            color: #d6d6d6;
+          }
+        }
+      `}</style>
+
+      {/* Seamless Smooth Dark Gradient Overlay (blends softly into previous and next sections) */}
       <div
-        className="position-absolute"
+        className="position-absolute w-100 h-100"
         style={{
-          width: '500px',
-          height: '500px',
-          background: 'radial-gradient(circle, rgba(245, 124, 0, 0.06) 0%, transparent 70%)',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          borderRadius: '50%',
-          filter: 'blur(100px)'
+          top: 0,
+          left: 0,
+          background: 'linear-gradient(to bottom, #0b0b0b 0%, rgba(10, 10, 10, 0.84) 18%, rgba(10, 10, 10, 0.75) 50%, rgba(10, 10, 10, 0.84) 82%, #0b0b0b 100%)',
+          backdropFilter: 'blur(2px)',
+          WebkitBackdropFilter: 'blur(2px)',
+          zIndex: 1
         }}
       />
 
       <div className="container position-relative" style={{ zIndex: 2 }}>
         {/* Section Header */}
         {!hideHeader && (
-          <SectionHeader
-            label="Testimonials"
-            title="What Clients Say"
-            subtitle="Hear from businesses and entrepreneurs who have transformed their digital presence with us."
-          />
+          <div className="mb-4 text-center">
+            <div 
+              className="d-inline-block px-3 py-1 mb-2 rounded-pill" 
+              style={{
+                background: 'rgba(245, 124, 0, 0.1)',
+                border: '1px solid rgba(245, 124, 0, 0.25)',
+                color: '#f57c00',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                letterSpacing: '1.4px',
+                textTransform: 'uppercase'
+              }}
+            >
+              CLIENT EXPERIENCE
+            </div>
+            <h2 
+              style={{
+                fontFamily: "'Space Grotesk', sans-serif",
+                fontSize: 'clamp(1.7rem, 3.2vw, 2.3rem)',
+                fontWeight: 700,
+                color: '#fff',
+                marginBottom: '10px'
+              }}
+            >
+              Built Around Your <span style={{ color: '#f57c00' }}>Needs</span>
+            </h2>
+            <p 
+              style={{
+                color: '#b0b0b0',
+                maxWidth: '580px',
+                margin: '0 auto',
+                fontSize: '0.96rem',
+                lineHeight: '1.6'
+              }}
+            >
+              We focus on understanding your requirements and building digital solutions that are clear, responsive, and aligned with your goals.
+            </p>
+          </div>
         )}
 
-        {/* Swiper Slider */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.3 }}
-        >
-          <Swiper
-            modules={[Pagination, Autoplay]}
-            spaceBetween={30}
-            slidesPerView={1}
-            pagination={{ clickable: true }}
-            autoplay={{ delay: 5000, disableOnInteraction: false }}
-            breakpoints={{
-              768: { slidesPerView: 2 },
-              1024: { slidesPerView: 3 }
-            }}
-            style={{ paddingBottom: '50px' }}
-          >
-            {testimonialsData.map((testimonial) => (
-              <SwiperSlide key={testimonial.id}>
-                <div
-                  className="h-100 p-4"
-                  style={{
-                    background: 'rgba(255,255,255,0.03)',
-                    backdropFilter: 'blur(20px)',
-                    borderRadius: '20px',
-                    border: '1px solid rgba(255,255,255,0.05)',
-                    transition: 'all 0.4s ease'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = 'rgba(245, 124, 0, 0.3)';
-                    e.currentTarget.style.transform = 'translateY(-5px)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)';
-                    e.currentTarget.style.transform = 'translateY(0)';
-                  }}
-                >
-                  {/* Quote Icon */}
-                  <FaQuoteLeft size={24} style={{ color: 'rgba(245, 124, 0, 0.3)', marginBottom: '1rem' }} />
-
-                  {/* Rating */}
-                  <div className="d-flex gap-1 mb-3">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <FaStar key={i} size={14} style={{ color: '#f57c00' }} />
-                    ))}
+        {/* Features Compact Cards Grid */}
+        <div className="row g-3 justify-content-center">
+          {features.map((feature, i) => {
+            const IconComponent = feature.icon;
+            return (
+              <motion.div
+                key={feature.id}
+                className="col-lg-4 col-md-6 col-12"
+                initial={{ opacity: 0, y: 20 }}
+                animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+                transition={{ duration: 0.45, delay: i * 0.1 }}
+              >
+                <div className="client-card">
+                  <div className="client-bg-number">{feature.number}</div>
+                  <div className="client-icon-wrapper">
+                    <IconComponent className="client-icon" />
                   </div>
-
-                  {/* Text */}
-                  <p style={{ color: '#cfcfcf', fontSize: '0.95rem', lineHeight: 1.7, marginBottom: '1.5rem', fontStyle: 'italic' }}>
-                    "{testimonial.text}"
+                  <h4 style={{
+                    fontFamily: "'Space Grotesk', sans-serif",
+                    fontWeight: 600,
+                    fontSize: '1.15rem',
+                    color: '#fff',
+                    marginBottom: '0.5rem'
+                  }}>
+                    {feature.title}
+                  </h4>
+                  <p style={{ color: '#bfbfbf', fontSize: '0.88rem', lineHeight: 1.6, margin: 0 }}>
+                    {feature.description}
                   </p>
-
-                  {/* Author */}
-                  <div className="d-flex align-items-center gap-3">
-                    <img
-                      src={testimonial.image}
-                      alt={testimonial.name}
-                      className="rounded-circle"
-                      style={{ width: 50, height: 50, objectFit: 'cover', border: '2px solid rgba(245, 124, 0, 0.3)' }}
-                    />
-                    <div>
-                      <div style={{ fontWeight: 600, color: '#fff', fontSize: '0.95rem' }}>
-                        {testimonial.name}
-                      </div>
-                      <div style={{ color: '#888', fontSize: '0.8rem' }}>
-                        {testimonial.role}
-                      </div>
-                    </div>
-                  </div>
                 </div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
+              </motion.div>
+            );
+          })}
+        </div>
+
+        {/* Bottom Commitment Banner (Compact, Sleek & Fully Responsive) */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }}
+          transition={{ duration: 0.4, delay: 0.35 }}
+          className="mt-4 text-center px-2 px-md-0"
+        >
+          <div className="commitment-banner">
+            <span className="commitment-tag">
+              <span className="commitment-dot" />
+              OUR COMMITMENT
+            </span>
+            <p className="commitment-text">
+              We value clear communication, strong execution, and long-term relationships over unnecessary promises.
+            </p>
+          </div>
         </motion.div>
       </div>
-
-      {/* Custom Pagination Styles */}
-      <style>{`
-        .swiper-pagination-bullet {
-          background: rgba(255,255,255,0.3) !important;
-          width: 10px !important;
-          height: 10px !important;
-        }
-        .swiper-pagination-bullet-active {
-          background: #f57c00 !important;
-          box-shadow: 0 0 10px rgba(245, 124, 0, 0.5) !important;
-        }
-        .swiper-slide {
-          height: auto !important;
-        }
-        .swiper-wrapper {
-          align-items: stretch;
-        }
-      `}</style>
     </section>
   );
 };

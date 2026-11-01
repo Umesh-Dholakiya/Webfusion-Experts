@@ -13,9 +13,7 @@ import Services from './pages/Services'
 import Portfolio from './pages/Portfolio'
 import Technologies from './pages/Technologies'
 import Testimonials from './pages/Testimonials'
-import Team from './pages/Team'
 import Contact from './pages/Contact'
-import Careers from './pages/Careers'
 import FAQ from './pages/FAQ'
 import PrivacyPolicy from './pages/PrivacyPolicy'
 import TermsConditions from './pages/TermsConditions'
@@ -63,9 +61,7 @@ function App() {
           <Route path="/portfolio" element={<Portfolio />} />
           <Route path="/technologies" element={<Technologies />} />
           <Route path="/testimonials" element={<Testimonials />} />
-          <Route path="/team" element={<Team />} />
           <Route path="/contact" element={<Contact />} />
-          <Route path="/careers" element={<Careers />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-conditions" element={<TermsConditions />} />

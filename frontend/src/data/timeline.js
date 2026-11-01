@@ -1,27 +1,22 @@
 export const timeline = [
   {
-    year: '2020',
+    year: '2026',
     title: 'Company Founded',
-    description: 'WebFusion Experts was founded with a mission to deliver premium digital experiences.'
+    description: 'WebFusion Experts was founded with a mission to deliver modern, high-performance digital experiences.'
   },
   {
-    year: '2021',
-    title: 'First Major Client',
-    description: 'Partnered with our first enterprise client, delivering a scalable e-commerce platform.'
+    year: '2026',
+    title: 'Full-Stack Solutions',
+    description: 'Expanded capabilities across modern web applications, e-commerce platforms, and custom digital software.'
   },
   {
-    year: '2022',
-    title: 'Team Expansion',
-    description: 'Grew to a team of 10+ experts across development, design, and strategy.'
+    year: '2026',
+    title: 'Client Collaboration',
+    description: 'Partnered with startups and businesses to build practical, scalable, and responsive digital products.'
   },
   {
-    year: '2023',
-    title: 'Global Reach',
-    description: 'Expanded services to international clients across 15+ countries.'
-  },
-  {
-    year: '2024',
-    title: 'Innovation Hub',
-    description: 'Launched our innovation lab focusing on AI-powered web solutions.'
+    year: '2027 & Beyond',
+    title: 'Future Horizons',
+    description: 'Continuing to innovate with modern cloud architectures, intelligent workflows, and cutting-edge web technologies.'
   }
 ]

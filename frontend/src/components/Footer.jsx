@@ -1,214 +1,335 @@
-import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import { FaLinkedin, FaInstagram, FaArrowUp } from 'react-icons/fa'
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { 
+  FaMapMarkerAlt, 
+  FaEnvelope, 
+  FaPhoneAlt, 
+  FaLinkedinIn, 
+  FaTwitter, 
+  FaInstagram, 
+  FaArrowUp
+} from 'react-icons/fa';
 
 const Footer = () => {
-  const [newsletterEmail, setNewsletterEmail] = useState('')
-  const [submitting, setSubmitting] = useState(false)
-  const [statusMsg, setStatusMsg] = useState('')
-  const [showScroll, setShowScroll] = useState(false)
+  const [showScroll, setShowScroll] = useState(false);
 
   useEffect(() => {
     const checkScrollTop = () => {
       if (window.scrollY > 300) {
-        setShowScroll(true)
+        setShowScroll(true);
       } else {
-        setShowScroll(false)
+        setShowScroll(false);
       }
-    }
-    window.addEventListener('scroll', checkScrollTop)
-    return () => window.removeEventListener('scroll', checkScrollTop)
-  }, [])
+    };
+    window.addEventListener('scroll', checkScrollTop);
+    return () => window.removeEventListener('scroll', checkScrollTop);
+  }, []);
 
   const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
-  const handleNewsletterSubmit = async (e) => {
-    e.preventDefault()
-    if (!newsletterEmail) return
-    setSubmitting(true)
-    setStatusMsg('')
+  const services = [
+    { name: 'Web Development', path: '/services' },
+    { name: 'Mobile Apps', path: '/services' },
+    { name: 'Custom CRM Systems', path: '/services' },
+    { name: 'Website Redesign', path: '/services' }
+  ];
 
-    const subscription = {
-      id: Date.now().toString(),
-      email: newsletterEmail,
-      createdAt: new Date().toISOString()
-    }
+  const technologies = [
+    { name: 'React & Next.js', path: '/technologies' },
+    { name: 'Flutter & Mobile', path: '/technologies' },
+    { name: 'Node.js & Express', path: '/technologies' },
+  ];
 
-    // Save locally
-    try {
-      const localNewsletter = JSON.parse(localStorage.getItem('wf_newsletter') || '[]')
-      localNewsletter.push(subscription)
-      localStorage.setItem('wf_newsletter', JSON.stringify(localNewsletter))
-    } catch (err) {
-      console.error('Error saving local subscription:', err)
-    }
+  const industries = [
+    { name: 'Healthcare & Wellness', path: '/portfolio' },
+    { name: 'E-Commerce & Retail', path: '/portfolio' },
+    { name: 'Real Estate & Hospitality', path: '/portfolio' },
+    { name: 'Finance & FinTech', path: '/portfolio' },
+    { name: 'SaaS & Startups', path: '/portfolio' },
+    { name: 'Manufacturing', path: '/portfolio' }
+  ];
 
-    // Post to API
-    try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
-      const response = await fetch(`${apiUrl}/newsletter`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(subscription)
-      })
+  const companyLinks = [
+    { name: 'About Us', path: '/about' },
+    { name: 'Portfolio', path: '/portfolio' },
+    { name: 'Technologies', path: '/technologies' },
+    { name: 'FAQs', path: '/faq' },
+    { name: 'Contact', path: '/contact' }
+  ];
 
-      if (response.ok) {
-        setStatusMsg('Thank you for subscribing!')
-        setNewsletterEmail('')
-      } else {
-        throw new Error('Server error')
-      }
-    } catch (err) {
-      console.warn('Backend server offline. Subscription saved in web cache.', err)
-      setStatusMsg('Subscribed! (Saved in local cache)')
-      setNewsletterEmail('')
-    } finally {
-      setSubmitting(false)
-    }
-  }
+  const socialLinks = [
+    { name: 'LinkedIn', icon: FaLinkedinIn, url: 'https://www.linkedin.com/in/webfusion-experts-4831b13b0/' },
+    { name: 'Twitter', icon: FaTwitter, url: 'https://x.com/WFXExperts' },
+    { name: 'Instagram', icon: FaInstagram, url: 'https://www.instagram.com/webfusion_experts' }
+  ];
 
   return (
-    <footer style={{
-      background: '#0b0b0b',
-      borderTop: '1px solid rgba(255,255,255,0.05)',
-      paddingTop: '80px'
-    }}>
-      <div className="container">
-        <div className="row g-5">
-          {/* Brand Column */}
-          <div className="col-lg-4">
-            <Link to="/" className="d-flex align-items-center gap-2 mb-4">
+    <footer 
+      style={{
+        backgroundColor: '#0b0b0b',
+        borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+        paddingTop: '75px',
+        paddingBottom: '30px',
+        color: '#ffffff',
+        position: 'relative',
+        overflow: 'hidden'
+      }}
+    >
+      {/* Subtle Warm Amber Ambient Top Glow matching the site theme */}
+      <div 
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '70%',
+          height: '250px',
+          background: 'radial-gradient(ellipse at top, rgba(245, 124, 0, 0.05) 0%, transparent 70%)',
+          pointerEvents: 'none',
+          zIndex: 0
+        }} 
+      />
+
+      <style>{`
+        .footer-heading {
+          font-size: 0.8rem;
+          font-weight: 700;
+          letter-spacing: 1.6px;
+          color: #ffffff;
+          text-transform: uppercase;
+          margin-bottom: 20px;
+          font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .footer-link-item {
+          color: #888888;
+          font-size: 0.92rem;
+          text-decoration: none;
+          transition: all 0.25s ease;
+          display: inline-block;
+          line-height: 1.5;
+        }
+
+        .footer-link-item:hover {
+          color: #f57c00;
+          transform: translateX(3px);
+        }
+
+        .footer-contact-item {
+          display: inline-flex;
+          align-items: center;
+          gap: 12px;
+          color: #cfcfcf;
+          font-size: 0.92rem;
+          text-decoration: none;
+          transition: all 0.25s ease;
+          padding: 8px 14px;
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          border-radius: 8px;
+        }
+
+        .footer-contact-item:hover {
+          color: #f57c00;
+          background: rgba(245, 124, 0, 0.08);
+          border-color: rgba(245, 124, 0, 0.3);
+          transform: translateY(-2px);
+        }
+
+        .footer-contact-icon {
+          color: #f57c00;
+          font-size: 15px;
+          flex-shrink: 0;
+        }
+
+        .social-square-btn {
+          width: 38px;
+          height: 38px;
+          border-radius: 10px;
+          background: #141414;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #888888;
+          font-size: 15px;
+          transition: all 0.25s ease;
+          text-decoration: none;
+        }
+
+        .social-square-btn:hover {
+          background: rgba(245, 124, 0, 0.1);
+          border-color: #f57c00;
+          color: #f57c00;
+          transform: translateY(-2px);
+        }
+
+        .legal-link {
+          color: #888888;
+          font-size: 0.88rem;
+          text-decoration: none;
+          transition: color 0.2s ease;
+        }
+
+        .legal-link:hover {
+          color: #f57c00;
+        }
+
+        .footer-hr {
+          border-color: rgba(255, 255, 255, 0.06);
+          margin: 32px 0 38px 0;
+        }
+      `}</style>
+
+      <div className="container position-relative" style={{ zIndex: 1 }}>
+        {/* TOP ROW: Brand Info & Contact Details (2 Columns) */}
+        <div className="row g-4 align-items-center justify-content-between pb-4">
+          {/* Part 1: Brand Logo & Tagline */}
+          <div className="col-lg-6 col-md-6">
+            <Link to="/" className="d-inline-block mb-3 text-decoration-none">
               <img 
-                src="/header_logo.png" 
+                src="/header_logo_1.png" 
                 alt="WebFusion Experts" 
-                style={{ height: '60px', width: 'auto' }}
+                style={{ height: '42px', width: 'auto' }}
               />
             </Link>
-            <p style={{ color: '#888', fontSize: '0.95rem', lineHeight: '1.8', maxWidth: '320px' }}>
-              WebFusion Experts is a modern digital agency focused on building premium websites, 
-              scalable applications, and powerful digital experiences for startups and businesses worldwide.
-            </p>
-            <div className="d-flex gap-3 mt-4">
-              {[
-                { Icon: FaLinkedin, url: '#' },
-                { Icon: FaInstagram, url: '#' }
-              ].map((item, i) => (
-                <motion.a
-                  key={i}
-                  href={item.url}
-                  whileHover={{ scale: 1.2, color: '#f57c00' }}
-                  style={{
-                    width: '40px',
-                    height: '40px',
-                    borderRadius: '50%',
-                    background: 'rgba(255,255,255,0.05)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#cfcfcf',
-                    fontSize: '18px',
-                    border: '1px solid rgba(255,255,255,0.1)'
-                  }}
-                >
-                  <item.Icon />
-                </motion.a>
-              ))}
+
+            <div>
+              <p style={{ color: '#ffffff', fontSize: '1.05rem', fontWeight: 600, margin: 0 }}>
+                Your Vision, Our Code.
+              </p>
+              <p style={{ color: '#888888', fontSize: '0.9rem', margin: '4px 0 0 0' }}>
+                Crafting Your Digital Success.
+              </p>
             </div>
           </div>
 
-          {/* Quick Links */}
-          <div className="col-lg-2 col-md-4">
-            <h5 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.1rem', marginBottom: '1.5rem' }}>
-              Quick Links
-            </h5>
-            <ul className="list-unstyled" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {['Home', 'About', 'Services', 'Portfolio', 'Contact'].map((item) => (
-                <li key={item}>
-                  <Link 
-                    to={item === 'Home' ? '/' : `/${item.toLowerCase()}`}
-                    style={{ color: '#888', fontSize: '0.9rem', transition: 'color 0.3s' }}
-                    onMouseEnter={(e) => e.target.style.color = '#f57c00'}
-                    onMouseLeave={(e) => e.target.style.color = '#888'}
-                  >
-                    {item}
+          {/* Part 2: Contact Details */}
+          <div className="col-lg-6 col-md-6">
+            <div className="d-flex flex-column gap-2 align-items-start align-items-md-end">
+              <div className="footer-contact-item">
+                <FaMapMarkerAlt className="footer-contact-icon" />
+                <span>Surat, Gujarat, India</span>
+              </div>
+              <a href="mailto:webfusionexperts24@gmail.com" className="footer-contact-item">
+                <FaEnvelope className="footer-contact-icon" />
+                <span>webfusionexperts24@gmail.com</span>
+              </a>
+              <a href="tel:+918849522577" className="footer-contact-item">
+                <FaPhoneAlt className="footer-contact-icon" />
+                <span>+91 8849522577</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {/* Divider 1 */}
+        <hr className="footer-hr" />
+
+        {/* MIDDLE ROW: 4 Column Navigation Links */}
+        <div className="row g-4 pb-2">
+          {/* Services */}
+          <div className="col-lg-3 col-md-6 col-6">
+            <h5 className="footer-heading">SERVICES</h5>
+            <ul className="list-unstyled d-flex flex-column gap-2 mb-0">
+              {services.map((item, idx) => (
+                <li key={idx}>
+                  <Link to={item.path} className="footer-link-item">
+                    {item.name}
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Services */}
-          <div className="col-lg-3 col-md-4">
-            <h5 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.1rem', marginBottom: '1.5rem' }}>
-              Services
-            </h5>
-            <ul className="list-unstyled" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {['Web Development', 'Shopify Development', 'Custom CRM Systems', 'Mobile App Development', 'SEO Optimization'].map((item) => (
-                <li key={item}>
-                  <span style={{ color: '#888', fontSize: '0.9rem' }}>{item}</span>
+          {/* Technologies */}
+          <div className="col-lg-3 col-md-6 col-6">
+            <h5 className="footer-heading">TECHNOLOGIES</h5>
+            <ul className="list-unstyled d-flex flex-column gap-2 mb-0">
+              {technologies.map((item, idx) => (
+                <li key={idx}>
+                  <Link to={item.path} className="footer-link-item">
+                    {item.name}
+                  </Link>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Newsletter */}
-          <div className="col-lg-3 col-md-4">
-            <h5 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.1rem', marginBottom: '1.5rem' }}>
-              Newsletter
-            </h5>
-            <p style={{ color: '#888', fontSize: '0.9rem', marginBottom: '1rem' }}>
-              Subscribe for the latest updates and insights.
-            </p>
-            <form onSubmit={handleNewsletterSubmit} className="d-flex flex-column gap-2">
-              <div className="d-flex gap-2">
-                <input
-                  type="email"
-                  placeholder="Your email"
-                  value={newsletterEmail}
-                  onChange={(e) => setNewsletterEmail(e.target.value)}
-                  className="form-control-custom flex-grow-1"
-                  style={{ fontSize: '0.85rem', padding: '10px 14px' }}
-                  required
-                />
-                <button 
-                  type="submit" 
-                  disabled={submitting} 
-                  className="btn-premium" 
-                  style={{ padding: '10px 20px', fontSize: '0.85rem' }}
-                >
-                  {submitting ? '...' : 'Join'}
-                </button>
-              </div>
-              {statusMsg && (
-                <span style={{ color: '#f57c00', fontSize: '0.8rem', paddingLeft: '2px' }}>
-                  {statusMsg}
-                </span>
-              )}
-            </form>
+          {/* Industries */}
+          <div className="col-lg-3 col-md-6 col-6">
+            <h5 className="footer-heading">INDUSTRIES</h5>
+            <ul className="list-unstyled d-flex flex-column gap-2 mb-0">
+              {industries.map((item, idx) => (
+                <li key={idx}>
+                  <Link to={item.path} className="footer-link-item">
+                    {item.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Company */}
+          <div className="col-lg-3 col-md-6 col-6">
+            <h5 className="footer-heading">COMPANY</h5>
+            <ul className="list-unstyled d-flex flex-column gap-2 mb-0">
+              {companyLinks.map((item, idx) => (
+                <li key={idx}>
+                  <Link to={item.path} className="footer-link-item">
+                    {item.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="d-flex flex-column flex-md-row align-items-center justify-content-between py-4 mt-5" style={{
-          borderTop: '1px solid rgba(255,255,255,0.05)'
-        }}>
-          <p style={{ color: '#666', fontSize: '0.85rem', margin: 0 }}>
+        {/* Divider 2 */}
+        <hr className="footer-hr" style={{ marginTop: '30px', marginBottom: '25px' }} />
+
+        {/* BOTTOM ROW: Copyright, Social Icons, Legal Links */}
+        <div className="d-flex flex-column flex-md-row align-items-center justify-content-between gap-3 pt-1">
+          {/* Copyright */}
+          <p style={{ color: '#777777', fontSize: '0.86rem', margin: 0, order: 1 }}>
             &copy; {new Date().getFullYear()} WebFusion Experts. All rights reserved.
           </p>
-          <div className="d-flex gap-4 mt-3 mt-md-0">
-            <Link to="/privacy-policy" style={{ color: '#666', fontSize: '0.85rem' }}>Privacy Policy</Link>
-            <Link to="/terms-conditions" style={{ color: '#666', fontSize: '0.85rem' }}>Terms</Link>
-            <Link to="/careers" style={{ color: '#666', fontSize: '0.85rem' }}>Careers</Link>
+
+          {/* Social Icons */}
+          <div className="d-flex gap-2" style={{ order: 2 }}>
+            {socialLinks.map((social, idx) => {
+              const SocialIcon = social.icon;
+              return (
+                <a
+                  key={idx}
+                  href={social.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="social-square-btn"
+                  aria-label={social.name}
+                >
+                  <SocialIcon />
+                </a>
+              );
+            })}
+          </div>
+
+          {/* Legal Links */}
+          <div className="d-flex gap-4" style={{ order: 3 }}>
+            <Link to="/privacy-policy" className="legal-link">
+              Privacy Policy
+            </Link>
+            <Link to="/terms-conditions" className="legal-link">
+              Terms of Service
+            </Link>
           </div>
         </div>
       </div>
 
-      {/* Scroll to Top */}
+      {/* Floating Scroll to Top */}
       {showScroll && (
         <motion.button
           onClick={scrollToTop}
@@ -221,10 +342,10 @@ const Footer = () => {
             position: 'fixed',
             bottom: '95px',
             right: '35px',
-            width: '40px',
-            height: '40px',
+            width: '42px',
+            height: '42px',
             borderRadius: '50%',
-            background: 'linear-gradient(135deg, #f57c00, #e65100)',
+            background: 'linear-gradient(135deg, #f57c00, #ff9800)',
             border: 'none',
             color: '#fff',
             display: 'flex',
@@ -232,14 +353,15 @@ const Footer = () => {
             justifyContent: 'center',
             cursor: 'pointer',
             zIndex: 998,
-            boxShadow: '0 4px 20px rgba(245, 124, 0, 0.3)'
+            boxShadow: '0 4px 20px rgba(245, 124, 0, 0.4)'
           }}
+          aria-label="Scroll to top"
         >
           <FaArrowUp />
         </motion.button>
       )}
     </footer>
-  )
-}
+  );
+};
 
-export default Footer
+export default Footer;

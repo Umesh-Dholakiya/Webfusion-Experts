@@ -8,28 +8,35 @@
 
 const express = require('express');
 const router = express.Router();
-const { CONTACTS_FILE, NEWSLETTER_FILE, WHATSAPP_LEADS_FILE } = require('../config/paths');
+const mongoose = require('mongoose');
+const { CONTACTS_FILE, WHATSAPP_LEADS_FILE } = require('../config/paths');
 const { readJSON, writeJSON } = require('../helpers/fileHelper');
 const { getIsConnected } = require('../config/db');
 const Contact = require('../models/Contact');
-const Newsletter = require('../models/Newsletter');
 const WhatsAppLead = require('../models/WhatsAppLead');
+
+// Helper to construct query that matches either Mongo _id or custom id
+const buildIdQuery = (id) => {
+  const isValidObjectId = mongoose.Types.ObjectId.isValid(id) && String(new mongoose.Types.ObjectId(id)) === id;
+  if (isValidObjectId) {
+    return { $or: [{ _id: id }, { id: id }] };
+  }
+  return { id: id };
+};
 
 // GET /api/submissions - Retrieve all submissions (Admin)
 router.get('/submissions', async (req, res, next) => {
   try {
     if (getIsConnected()) {
       const contacts = await Contact.find().sort({ createdAt: -1 });
-      const newsletters = await Newsletter.find().sort({ createdAt: -1 });
       const whatsappLeads = await WhatsAppLead.find().sort({ createdAt: -1 });
-      return res.status(200).json({ contacts, newsletters, whatsappLeads });
+      return res.status(200).json({ contacts, whatsappLeads });
     }
 
     // Fallback JSON
     const contacts = readJSON(CONTACTS_FILE);
-    const newsletters = readJSON(NEWSLETTER_FILE);
     const whatsappLeads = readJSON(WHATSAPP_LEADS_FILE);
-    res.status(200).json({ contacts, newsletters, whatsappLeads });
+    res.status(200).json({ contacts, whatsappLeads });
   } catch (err) {
     next(err);
   }
@@ -41,16 +48,24 @@ router.patch('/submissions/contact/:id', async (req, res, next) => {
     const { id } = req.params;
     const { status, notes } = req.body;
 
-    if (getIsConnected()) {
-      const updateData = {};
-      if (status) updateData.status = status;
-      if (notes !== undefined) updateData.notes = notes;
+    const updateData = {};
+    if (status) updateData.status = status;
+    if (notes !== undefined) updateData.notes = notes;
 
-      const updated = await Contact.findOneAndUpdate(
-        { $or: [{ _id: mongoose.Types.ObjectId.isValid(id) ? id : null }, { id }] },
-        updateData,
-        { new: true }
-      );
+    if (getIsConnected()) {
+      const query = buildIdQuery(id);
+      const updated = await Contact.findOneAndUpdate(query, updateData, { new: true });
+
+      // Keep local JSON backup in sync
+      try {
+        const contacts = readJSON(CONTACTS_FILE);
+        const index = contacts.findIndex(c => c.id === id || c._id === id);
+        if (index !== -1) {
+          if (status) contacts[index].status = status;
+          if (notes !== undefined) contacts[index].notes = notes;
+          writeJSON(CONTACTS_FILE, contacts);
+        }
+      } catch (err) { /* silent */ }
 
       if (!updated) {
         return res.status(404).json({ error: 'Submission not found.' });
@@ -60,7 +75,7 @@ router.patch('/submissions/contact/:id', async (req, res, next) => {
 
     // Fallback JSON
     const contacts = readJSON(CONTACTS_FILE);
-    const index = contacts.findIndex(c => c.id === id);
+    const index = contacts.findIndex(c => c.id === id || c._id === id);
 
     if (index === -1) {
       return res.status(404).json({ error: 'Submission not found.' });
@@ -86,11 +101,18 @@ router.patch('/submissions/whatsapp/:id', async (req, res, next) => {
     const { status } = req.body;
 
     if (getIsConnected()) {
-      const updated = await WhatsAppLead.findOneAndUpdate(
-        { $or: [{ _id: mongoose.Types.ObjectId.isValid(id) ? id : null }, { id }] },
-        { status },
-        { new: true }
-      );
+      const query = buildIdQuery(id);
+      const updated = await WhatsAppLead.findOneAndUpdate(query, { status }, { new: true });
+
+      // Keep local JSON backup in sync
+      try {
+        const leads = readJSON(WHATSAPP_LEADS_FILE);
+        const index = leads.findIndex(l => l.id === id || l._id === id);
+        if (index !== -1) {
+          leads[index].status = status;
+          writeJSON(WHATSAPP_LEADS_FILE, leads);
+        }
+      } catch (err) { /* silent */ }
 
       if (!updated) {
         return res.status(404).json({ error: 'WhatsApp lead not found.' });
@@ -100,7 +122,7 @@ router.patch('/submissions/whatsapp/:id', async (req, res, next) => {
 
     // Fallback JSON
     const leads = readJSON(WHATSAPP_LEADS_FILE);
-    const index = leads.findIndex(l => l.id === id);
+    const index = leads.findIndex(l => l.id === id || l._id === id);
 
     if (index === -1) {
       return res.status(404).json({ error: 'WhatsApp lead not found.' });
@@ -124,10 +146,25 @@ router.delete('/submissions/contact/:id', async (req, res, next) => {
     const { id } = req.params;
 
     if (getIsConnected()) {
-      const deleted = await Contact.findOneAndDelete({
-        $or: [{ _id: mongoose.Types.ObjectId.isValid(id) ? id : null }, { id }]
-      });
-      if (!deleted) {
+      const query = buildIdQuery(id);
+      const deleteResult = await Contact.deleteMany(query);
+
+      // Also clean up from local JSON backup
+      try {
+        let contacts = readJSON(CONTACTS_FILE);
+        contacts = contacts.filter(c => c.id !== id && c._id !== id);
+        writeJSON(CONTACTS_FILE, contacts);
+      } catch (err) { /* silent */ }
+
+      if (deleteResult.deletedCount === 0) {
+        // Check if exists in fallback json
+        let contacts = readJSON(CONTACTS_FILE);
+        const exists = contacts.some(c => c.id === id || c._id === id);
+        if (exists) {
+          contacts = contacts.filter(c => c.id !== id && c._id !== id);
+          writeJSON(CONTACTS_FILE, contacts);
+          return res.status(200).json({ message: 'Submission deleted successfully.' });
+        }
         return res.status(404).json({ error: 'Submission not found.' });
       }
       return res.status(200).json({ message: 'Submission deleted successfully.' });
@@ -135,13 +172,13 @@ router.delete('/submissions/contact/:id', async (req, res, next) => {
 
     // Fallback JSON
     let contacts = readJSON(CONTACTS_FILE);
-    const exists = contacts.some(c => c.id === id);
+    const exists = contacts.some(c => c.id === id || c._id === id);
 
     if (!exists) {
       return res.status(404).json({ error: 'Submission not found.' });
     }
 
-    contacts = contacts.filter(c => c.id !== id);
+    contacts = contacts.filter(c => c.id !== id && c._id !== id);
 
     if (writeJSON(CONTACTS_FILE, contacts)) {
       res.status(200).json({ message: 'Submission deleted successfully.' });
@@ -153,40 +190,6 @@ router.delete('/submissions/contact/:id', async (req, res, next) => {
   }
 });
 
-// DELETE /api/submissions/newsletter/:id - Delete Newsletter Subscriber
-router.delete('/submissions/newsletter/:id', async (req, res, next) => {
-  try {
-    const { id } = req.params;
-
-    if (getIsConnected()) {
-      const deleted = await Newsletter.findOneAndDelete({
-        $or: [{ _id: mongoose.Types.ObjectId.isValid(id) ? id : null }, { id }]
-      });
-      if (!deleted) {
-        return res.status(404).json({ error: 'Subscriber not found.' });
-      }
-      return res.status(200).json({ message: 'Subscriber deleted successfully.' });
-    }
-
-    // Fallback JSON
-    let subscribers = readJSON(NEWSLETTER_FILE);
-    const exists = subscribers.some(s => s.id === id);
-
-    if (!exists) {
-      return res.status(404).json({ error: 'Subscriber not found.' });
-    }
-
-    subscribers = subscribers.filter(s => s.id !== id);
-
-    if (writeJSON(NEWSLETTER_FILE, subscribers)) {
-      res.status(200).json({ message: 'Subscriber deleted successfully.' });
-    } else {
-      res.status(500).json({ error: 'Failed to delete.' });
-    }
-  } catch (err) {
-    next(err);
-  }
-});
 
 // DELETE /api/submissions/whatsapp/:id - Delete WhatsApp Lead
 router.delete('/submissions/whatsapp/:id', async (req, res, next) => {
@@ -194,10 +197,24 @@ router.delete('/submissions/whatsapp/:id', async (req, res, next) => {
     const { id } = req.params;
 
     if (getIsConnected()) {
-      const deleted = await WhatsAppLead.findOneAndDelete({
-        $or: [{ _id: mongoose.Types.ObjectId.isValid(id) ? id : null }, { id }]
-      });
-      if (!deleted) {
+      const query = buildIdQuery(id);
+      const deleteResult = await WhatsAppLead.deleteMany(query);
+
+      // Also clean up from local JSON backup
+      try {
+        let leads = readJSON(WHATSAPP_LEADS_FILE);
+        leads = leads.filter(l => l.id !== id && l._id !== id);
+        writeJSON(WHATSAPP_LEADS_FILE, leads);
+      } catch (err) { /* silent */ }
+
+      if (deleteResult.deletedCount === 0) {
+        let leads = readJSON(WHATSAPP_LEADS_FILE);
+        const exists = leads.some(l => l.id === id || l._id === id);
+        if (exists) {
+          leads = leads.filter(l => l.id !== id && l._id !== id);
+          writeJSON(WHATSAPP_LEADS_FILE, leads);
+          return res.status(200).json({ message: 'WhatsApp lead deleted successfully.' });
+        }
         return res.status(404).json({ error: 'WhatsApp lead not found.' });
       }
       return res.status(200).json({ message: 'WhatsApp lead deleted successfully.' });
@@ -205,13 +222,13 @@ router.delete('/submissions/whatsapp/:id', async (req, res, next) => {
 
     // Fallback JSON
     let leads = readJSON(WHATSAPP_LEADS_FILE);
-    const exists = leads.some(l => l.id === id);
+    const exists = leads.some(l => l.id === id || l._id === id);
 
     if (!exists) {
       return res.status(404).json({ error: 'WhatsApp lead not found.' });
     }
 
-    leads = leads.filter(l => l.id !== id);
+    leads = leads.filter(l => l.id !== id && l._id !== id);
 
     if (writeJSON(WHATSAPP_LEADS_FILE, leads)) {
       res.status(200).json({ message: 'WhatsApp lead deleted successfully.' });

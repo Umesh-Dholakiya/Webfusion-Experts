@@ -7,9 +7,9 @@ const HeroSection = () => {
 
   const floatingCards = [
     { icon: '⚡', label: 'Fast Performance', delay: 0 },
-    { icon: '🎨', label: 'Premium Design', delay: 0.5 },
-    { icon: '🚀', label: 'Scalable Apps', delay: 1 },
-    { icon: '📱', label: 'Responsive', delay: 1.5 }
+    { icon: '🎨', label: 'Modern Design', delay: 0.5 },
+    { icon: '🚀', label: 'Web Solutions', delay: 1 },
+    { icon: '📱', label: 'Responsive Design', delay: 1.5 }
   ];
 
   return (
@@ -67,14 +67,14 @@ const HeroSection = () => {
       <div className="container position-relative z-index-1">
         <div className="row align-items-center">
           {/* Left Content */}
-          <div className="col-lg-7">
+          <div className="col-lg-7" style={{ marginTop: '40px' }}>
             <motion.div
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
             >
               <div className="section-label mb-3">
-                Premium Digital Agency
+                DIGITAL SOLUTIONS STUDIO
               </div>
 
               <h1 style={{
@@ -84,10 +84,10 @@ const HeroSection = () => {
                 lineHeight: 1.1,
                 marginBottom: '1.5rem'
               }}>
-                Building{' '}
-                <span className="gradient-text">Premium</span>
+                We Build{' '}
+                <span className="gradient-text">Digital</span>
                 <br />
-                Digital Experiences
+                Experiences That Matter
               </h1>
 
               <p style={{
@@ -97,8 +97,7 @@ const HeroSection = () => {
                 lineHeight: 1.8,
                 marginBottom: '2rem'
               }}>
-                We help startups and businesses build modern websites, scalable web applications, and e-commerce solutions with a focus on performance, user experience, and long-term growth.
-              </p>
+                We help startups and businesses build modern websites, web applications, and e-commerce solutions focused on performance, usability, and a better digital experience.              </p>
 
               <div className="d-flex flex-row gap-2 gap-md-3 w-100">
                 <Link to="/contact" className="btn-premium flex-fill text-center d-flex align-items-center justify-content-center gap-1 px-1 px-md-4 py-2 py-md-3" style={{ fontSize: 'clamp(0.75rem, 2.5vw, 1rem)', whiteSpace: 'nowrap' }}>
@@ -113,7 +112,7 @@ const HeroSection = () => {
               <div className="d-flex justify-content-around justify-content-lg-start gap-lg-5 w-100 mt-5 pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
                 {[
                   { number: '10+', label: 'Projects' },
-                  { number: '100%', label: 'Responsive' },
+                  { number: '90%', label: 'Success Rate' },
                   { number: '24/7', label: 'Support' }
                 ].map((stat, i) => (
                   <motion.div
