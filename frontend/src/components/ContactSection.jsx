@@ -44,24 +44,41 @@ const ContactSection = () => {
 
     // Send to Backend API
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || '/api'
-      const response = await fetch(`${apiUrl}/contact`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(submissionData),
-      })
+      const endpoints = [
+        '/api/contact',
+        'https://webfusion-backend-j0fd.onrender.com/api/contact'
+      ]
 
-      if (response.ok) {
+      let response = null
+      let lastError = null
+
+      for (const endpoint of endpoints) {
+        try {
+          const res = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(submissionData),
+          })
+          if (res && res.ok) {
+            response = res
+            break
+          }
+        } catch (err) {
+          lastError = err
+        }
+      }
+
+      if (response && response.ok) {
         setStatusMsg({
           type: 'success',
           text: '✅ Thank you! Your message has been submitted successfully. We will get back to you within 24 hours.'
         })
         setFormData({ name: '', email: '', phone: '', service: '', subject: '', message: '' })
       } else {
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.error || 'Server returned error status')
+        const errorData = response ? await response.json().catch(() => ({})) : {}
+        throw new Error(errorData.error || (lastError && lastError.message) || 'Server returned error status')
       }
     } catch (error) {
       console.error('Form submission error:', error)

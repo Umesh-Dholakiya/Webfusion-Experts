@@ -31,6 +31,15 @@ function App() {
       offset: 100,
       easing: 'ease-out-cubic'
     })
+
+    // Pre-warm the backend on Render (mitigate free-tier spin-up delay)
+    try {
+      const rawApiUrl = import.meta.env.VITE_API_URL || '/api'
+      const apiUrl = rawApiUrl.replace(/\/$/, '')
+      fetch(`${apiUrl}/health`).catch(() => {})
+    } catch (e) {
+      // silent
+    }
   }, [])
 
   useEffect(() => {

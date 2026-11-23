@@ -4,10 +4,9 @@ node_modules/
 # Build output
 dist/
 
-# Environment files (keep .env.example but not actual .env)
+# Environment files (keep .env.example and .env.production)
 .env
 .env.local
-.env.production
 
 # Editor
 .vscode/

@@ -1,0 +1,18 @@
+[build]
+  base = "frontend"
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  VITE_API_URL = "https://webfusion-backend-j0fd.onrender.com/api"
+
+[[redirects]]
+  from = "/api/*"
+  to = "https://webfusion-backend-j0fd.onrender.com/api/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

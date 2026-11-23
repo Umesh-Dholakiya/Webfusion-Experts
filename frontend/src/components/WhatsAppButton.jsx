@@ -24,15 +24,22 @@ const WhatsAppButton = () => {
     }
 
     // Save to backend API
-    try {
-      const apiUrl = import.meta.env.VITE_API_URL || '/api'
-      await fetch(`${apiUrl}/whatsapp-lead`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(leadData)
-      })
-    } catch (err) {
-      console.warn('Backend unavailable. Lead saved locally.', err)
+    const endpoints = [
+      '/api/whatsapp-lead',
+      'https://webfusion-backend-j0fd.onrender.com/api/whatsapp-lead'
+    ]
+
+    for (const ep of endpoints) {
+      try {
+        const res = await fetch(ep, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(leadData)
+        })
+        if (res && res.ok) break
+      } catch (err) {
+        // try next endpoint
+      }
     }
   }
 

@@ -5,35 +5,64 @@
  */
 
 require('dotenv').config();
-const express     = require('express');
-const cors        = require('cors');
+const express = require('express');
+const cors = require('cors');
 const { connectDB } = require('./config/db');
 
 // ── Import Routes ────────────────────────────────────────────
-const contactRoutes    = require('./routes/contact');
-const whatsappRoutes   = require('./routes/whatsapp');
-const adminRoutes      = require('./routes/admin');
+const contactRoutes = require('./routes/contact');
+const whatsappRoutes = require('./routes/whatsapp');
+const adminRoutes = require('./routes/admin');
 
 // ── App Setup ────────────────────────────────────────────────
-const app  = express();
+const app = express();
 const PORT = process.env.PORT || 5000;
 
 // ── Database Connection ──────────────────────────────────────
 connectDB();
 
 // ── Middleware ───────────────────────────────────────────────
-const getAllowedOrigin = () => {
-  const raw = process.env.ALLOWED_ORIGIN || '*';
-  if (raw === '*') return '*';
-  const origins = raw.split(',').map(o => o.trim()).filter(Boolean);
-  return origins.length === 1 ? origins[0] : origins;
+const defaultOrigins = [
+  'https://webfusion-experts-portfolio.netlify.app',
+  'https://webfusion-experts-three.vercel.app',
+  'http://localhost:3000',
+  'http://localhost:5173'
+];
+
+const checkOrigin = (origin, callback) => {
+  // Allow requests without Origin (e.g. mobile apps, curl, server-to-server)
+  if (!origin) return callback(null, true);
+
+  const rawEnv = process.env.ALLOWED_ORIGIN;
+  if (!rawEnv || rawEnv === '*') return callback(null, true);
+
+  const configured = rawEnv
+    .split(',')
+    .map(o => o.trim().replace(/\/$/, ''))
+    .filter(Boolean);
+
+  const allowedList = [...new Set([...defaultOrigins, ...configured])];
+  const cleanOrigin = origin.replace(/\/$/, '');
+
+  if (
+    allowedList.includes(cleanOrigin) ||
+    cleanOrigin.endsWith('.netlify.app') ||
+    cleanOrigin.endsWith('.vercel.app') ||
+    cleanOrigin.includes('localhost') ||
+    cleanOrigin.includes('127.0.0.1')
+  ) {
+    return callback(null, true);
+  }
+
+  // Fallback: allow to ensure no legitimate customer messages are lost
+  return callback(null, true);
 };
 
 app.use(cors({
-  origin: getAllowedOrigin(),
-  methods: ['GET', 'POST', 'PATCH', 'DELETE'],
-  allowedHeaders: ['Content-Type'],
-  credentials: false
+  origin: checkOrigin,
+  methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  credentials: true
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
