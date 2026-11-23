@@ -2,7 +2,7 @@
 node_modules/
 
 # Environment secrets — NEVER commit this
-
+.env
 
 # Runtime data files (auto-created by server)
 data/contacts.json
